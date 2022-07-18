@@ -1,0 +1,109 @@
+---
+- name: Create required directories
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: '{{ mgmt_stacks.owner }}'
+    group: '{{ mgmt_stacks.group }}'
+    mode: '{{ mgmt_stacks.mode }}'
+  with_items:
+    - '{{ mgmt_stacks.dir }}'
+    - '{{ mgmt_stacks.dir }}/traefik'
+    - '{{ mgmt_stacks.dir }}/traefik/config'
+    - '{{ mgmt_stacks.dir }}/portainer'
+
+- name: 'Generate BasicAuth user:password pair'
+  shell: htpasswd -nbB {{ vault_traefik_user }} "{{ vault_traefik_pass }}" | sed -e 's/\$/\$\$/g'
+  register: traefik_htpasswd
+  when:
+    - vault_traefik_user != ''
+    - vault_traefik_pass != ''
+
+- name: BasicAuth pair output
+  debug:
+    msg: "{{ traefik_htpasswd.stdout }}"
+  when: traeik_htpasswd is defined
+
+- name: Copy stacks compose files
+  template:
+    src: "{{ item.0 }}"
+    dest: "{{ item.1 }}"
+    owner: '{{ mgmt_stacks.owner }}'
+    group: '{{ mgmt_stacks.group }}'
+  with_list:
+    - ['traefik.yml.j2', '{{ mgmt_stacks.dir }}/traefik/traefik.yml']
+    - ['portainer.yml.j2', '{{ mgmt_stacks.dir }}/portainer/portainer.yml']
+
+- name: Copy Traefik configuration file
+  copy:
+    src: traefik-config
+    dest: '{{ mgmt_stacks.dir }}/traefik/config/traefik-config.yml'
+    owner: '{{ mgmt_stacks.owner }}'
+    group: '{{ mgmt_stacks.group }}'
+
+- name: Create config traefik-config (from a file)
+  community.docker.docker_config:
+    name: traefik-config
+    data: "{{ lookup('file', 'traefik-config') }}"
+    state: present
+  register:
+    traefik_config
+
+- name: traefik-config output
+  debug:
+    msg: "{{ traefik_config.config_id }}"
+
+- name: Create secret traefik-default-certfile (from a file)
+  community.docker.docker_secret:
+    name: traefik-default-certfile
+    data: "{{ traefik_tls_crt | b64decode }}"
+    data_is_b64: false
+    state: present
+  register:
+    traefik_tls_crt_secret
+
+- name: traefik-default-certfile output
+  debug:
+    msg: "{{ traefik_tls_crt_secret.secret_id }}"
+
+- name: Create secret traefik-default-keyfile (from a file)
+  community.docker.docker_secret:
+    name: traefik-default-keyfile
+    data: "{{ traefik_tls_key | b64decode }}"
+    data_is_b64: false
+    state: present
+  register:
+    traefik_tls_key_secret
+
+- name: traefik-default-keyfile output
+  debug:
+    msg: "{{ traefik_tls_key_secret.secret_id }}"
+
+- name: Create required docker network
+  community.docker.docker_network:
+    name: '{{ traefik_network_name }}'
+    driver: overlay
+    state: present
+    scope: swarm
+    ipam_config:
+      - subnet: "{{ traefik_network_subnet }}"
+  register:
+    docker_network
+
+- name: network create output
+  debug:
+    msg: "{{ docker_network.network.Id }}"
+
+- name: Deploy Traefik stack from a compose file
+  community.docker.docker_stack:
+    state: present
+    name: traefik
+    compose: "{{ mgmt_stacks.dir }}/traefik/traefik.yml"
+    prune: true
+
+- name: Deploy Portainer stack from a compose file
+  community.docker.docker_stack:
+    state: present
+    name: portainer
+    compose: "{{ mgmt_stacks.dir }}/portainer/portainer.yml"
+    prune: true

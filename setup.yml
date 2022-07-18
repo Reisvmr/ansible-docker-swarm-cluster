@@ -1,0 +1,20 @@
+---
+- name: Prepare the environment
+  hosts: swarm
+  gather_facts: true
+  become: true
+  roles:
+    - role: prereq
+    - role: docker
+
+- name: Docker Swarm
+  hosts: swarm
+  become: true
+  roles:
+    - role: cluster
+
+- name: Management deployments
+  hosts: manager[0]
+  become: true
+  roles:
+    - role: stacks/mgmt

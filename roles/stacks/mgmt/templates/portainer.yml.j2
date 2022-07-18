@@ -1,0 +1,67 @@
+version: "3.8"
+
+networks:
+  portainer_network:
+    driver: overlay
+    attachable: true
+  {{ traefik_network_name }}:
+    external: true
+
+volumes:
+  data:
+
+services:
+  agent:
+    image: portainer/agent:{{ portainer_version }}-alpine
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - portainer_network
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '{{ portainer_agent.limits.cpus }}'
+          memory: {{ portainer_agent.limits.memory }}
+        reservations:
+          cpus: '{{ portainer_agent.reservations.cpus }}'
+          memory: {{ portainer_agent.reservations.memory }}
+      restart_policy:
+        condition: any
+        delay: 5s
+
+  portainer:
+    image: portainer/portainer-ce:{{ portainer_version }}-alpine
+    command: -H tcp://agent:9001 --tlsskipverify
+    volumes:
+      - data:/data
+    networks:
+      - portainer_network
+      - {{ traefik_network_name }}
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '{{ portainer.limits.cpus }}'
+          memory: {{ portainer.limits.memory }}
+        reservations:
+          cpus: '{{ portainer.reservations.cpus }}'
+          memory: {{ portainer.reservations.memory }}
+      restart_policy:
+        condition: any
+        delay: 5s
+      labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ traefik_network_name }}"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.rule=Host(`{{ mgmt_hostname }}`) && PathPrefix(`/{{ portainer_url_path }}/`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.middlewares=portainer-stripprefix"
+      - "traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/{{ portainer_url_path }}"

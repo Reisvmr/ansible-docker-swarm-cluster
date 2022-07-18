@@ -1,0 +1,10 @@
+---
+- name: Reset cluster
+  hosts: swarm
+  gather_facts: true
+  become: true
+  vars_files:
+      - roles/docker/defaults/main.yml
+      - roles/stacks/mgmt/defaults/main.yml
+  roles:
+    - role: reset

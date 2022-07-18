@@ -1,0 +1,37 @@
+---
+# Deployment resources reservation and limits
+# Path: roles\stacks\defaults\main.yml
+
+# Management stacks directory params
+mgmt_stacks:
+  dir: '/opt/docker'
+  owner: '{{ ansible_user }}'
+  group: 'docker'
+  mode: '0755'
+
+# Traefik
+traefik:
+  reservations:
+    cpus: "0.5"
+    memory: 256M
+  limits:
+    cpus: "1"
+    memory: 1G
+
+# Portainer CE
+portainer:
+  reservations:
+    cpus: "0.5"
+    memory: 256M
+  limits:
+    cpus: "1"
+    memory: 512M
+
+# Portainer agent
+portainer_agent:
+  reservations:
+    memory: 128M
+    cpus: "0.2"
+  limits:
+    memory: 256M
+    cpus: "0.5"

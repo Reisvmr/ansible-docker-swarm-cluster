@@ -1,0 +1,6 @@
+---
+# Overrides the system hostname
+override_system_hostname: true
+
+# Set your timezone
+system_timezone: "Europe/Riga"

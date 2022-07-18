@@ -1,0 +1,17 @@
+---
+- name: Add repository
+  yum_repository:
+    name: docker
+    description: Docker CE Stable - $basearch
+    baseurl: "{{ docker_repository[ansible_os_family][ansible_distribution_major_version].baseurl }}"
+    gpgkey: "{{ docker_repository[ansible_os_family][ansible_distribution_major_version].gpgkey }}"
+    exclude: ["docker-ce", "docker-ce-cli", "containerd.io"]
+    gpgcheck: yes
+
+- name: Install pacakges
+  yum:
+    name:
+    - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"
+    - "{{ docker_packages[ansible_os_family]['docker-ce-cli'] }}"
+    - "{{ docker_packages[ansible_os_family]['containerd.io'] }}"
+    disable_excludes: "docker"

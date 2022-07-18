@@ -1,0 +1,44 @@
+---
+- include_tasks: debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: rhel.yml
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: Create docker configuration directory
+  file:
+    path: /etc/docker/
+    state: directory
+
+- name: Configure docker daemon
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify: reload systemd
+
+- name: Create docker.service.d directory
+  file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+
+- name: Configure proxy settings
+  template:
+    src: 10-http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/10-http-proxy.conf
+  notify: restart docker
+  when: http_proxy is defined or https_proxy is defined
+
+- name: Apply configuration
+  meta: flush_handlers
+
+- name: Enable docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Adding user {{ ansible_user }} to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes

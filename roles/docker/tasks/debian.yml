@@ -1,0 +1,43 @@
+---
+- name: Install packages to allow apt to use repository over HTTPS
+  apt:
+    name:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg2
+    - lsb-release
+    state: present
+    update_cache: true
+
+- name: Add repository public key
+  apt_key:
+    id: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_id }}"
+    url: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_url }}"
+    state: present
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ https_proxy }}"
+
+- name: Add repository
+  apt_repository:
+    repo: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].repo }}"
+    filename: docker
+    state: present
+
+- name: Install packages
+  apt:
+    name:
+    - "{{ docker_packages[ansible_distribution]['docker-ce'] }}"
+    - "{{ docker_packages[ansible_distribution]['docker-ce-cli'] }}"
+    - "{{ docker_packages[ansible_distribution]['containerd.io'] }}"
+    update_cache: yes
+
+- name: Hold packages
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io

@@ -1,0 +1,21 @@
+---
+#############################################################################################
+# Encrypt the file using strong password:
+#   ansible-vault encrypt inventory/group_vars/all/all-vault.yml
+#
+# Passwords with special characters might not work correctly.
+# Valid passwords can be created using the following command:
+#   tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1
+#
+# Files can be encoded in base64 format ussing the following command:
+#   base64 -w 0 <file>
+#############################################################################################
+
+# Certificate and private key in base64 format
+# NOTE: TLS certificates should be issued by trusted certificate authority.
+traefik_tls_crt:
+traefik_tls_key:
+
+# Traefik credentials in plain text
+vault_traefik_user:
+vault_traefik_pass:

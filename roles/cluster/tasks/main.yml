@@ -1,0 +1,48 @@
+---
+- name: Init swarm on the first node
+  docker_swarm:
+    state: present
+    advertise_addr: "{{ ansible_default_ipv4['address'] }}"
+  register: init_result
+  when: inventory_hostname == groups['manager'][0]
+
+# - name: Open port 2377 on the first node
+#   ansible.posix.firewalld:
+#     zone: public
+#     port: "2377/tcp"
+#     permanent: true
+#     immediate: true
+#     state: enabled
+#   when:
+#     - ansible_os_family == 'RedHat'
+#     - inventory_hostname in groups['manager']
+
+# - debug:
+#     msg: "{{ init_result }}"
+#   when: inventory_hostname == groups['manager'][0]
+
+- name: Get join-token for manager nodes
+  set_fact:
+    join_token_manager: "{{ hostvars[groups['manager'][0]].init_result.swarm_facts.JoinTokens.Manager }}"
+
+- name: Get join-token for worker nodes
+  set_fact:
+    join_token_worker: "{{ hostvars[groups['manager'][0]].init_result.swarm_facts.JoinTokens.Worker }}"
+
+- name: Join other managers
+  docker_swarm:
+    state: join
+    join_token: "{{ join_token_manager }}"
+    advertise_addr: "{{ ansible_host }}"
+    remote_addrs: "{{ hostvars[groups['manager'][0]].ansible_host }}"
+  when:
+    - inventory_hostname in groups['manager']
+    - inventory_hostname != groups['manager'][0]
+
+- name: Join workers
+  docker_swarm:
+    state: join
+    join_token: "{{ join_token_worker }}"
+    advertise_addr: "{{ ansible_host }}"
+    remote_addrs: "{{ hostvars[groups['manager'][0]].ansible_host }}"
+  when: inventory_hostname in groups['worker']

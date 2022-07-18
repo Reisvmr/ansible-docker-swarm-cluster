@@ -1,0 +1,12 @@
+{
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "{{ docker_log_max_size }}"
+    },
+    "graph": "{{ docker_local_storage }}",
+    "storage-driver": "overlay2",
+    "icc": false,
+    "no-new-privileges": true,
+    "bip": "{{ docker_network_bip }}"
+}

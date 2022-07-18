@@ -1,0 +1,69 @@
+---
+# Bootsrap the VM
+# Path: roles/prereq/tasks/main.yml
+
+- include_tasks: prep-rhel.yml
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- include_tasks: prep-debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Setting default python to python3
+  set_fact:
+    ansible_python_interpreter: "/usr/bin/python3"
+
+- name: Prepare proxy env
+  set_fact:
+    proxy_env:
+      http_proxy: "{{ http_proxy | default(omit) }}"
+      https_proxy: "{{ https_proxy | default(omit) }}"
+      no_proxy: "{{ no_proxy | default(omit) }}"
+
+- debug:
+    var: proxy_env
+
+- name: Update python3 pip
+  pip:
+    name: pip
+    state: latest
+  environment: "{{ proxy_env }}"
+
+- name: Update python3 setuptools
+  pip:
+    name: setuptools
+    state: latest
+  environment: "{{ proxy_env }}"
+
+- name: Install required python3 dependencies
+  pip:
+    name:
+      - docker>=5.0.1
+      - jsondiff>=2.0.0
+      # - pyyaml>=6.0
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Assign inventory name to unconfigured hostnames
+  hostname:
+    name: "{{ inventory_hostname }}"
+    use: systemd
+  when: override_system_hostname
+
+- name: Set same timezone on every server
+  timezone:
+    name: "{{ system_timezone }}"
+  when: system_timezone is defined
+
+- name: Enable IPv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: yes
+
+- name: Enable IPv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    state: present
+    reload: yes

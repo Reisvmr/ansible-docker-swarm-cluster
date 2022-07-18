@@ -1,0 +1,95 @@
+version: "3.8"
+
+networks:
+  {{ traefik_network_name }}:
+    external: true
+
+volumes:
+  logs:
+
+configs:
+  traefik-config:
+    external: true
+
+secrets:
+  traefik-default-certfile:
+    external: true
+  traefik-default-keyfile:
+    external: true
+
+services:
+  traefik:
+    image: traefik:v{{ traefik_version }}
+    command:
+      - "--accesslog.filepath=/logs/access.log"
+      - "--accesslog.bufferingsize=100"
+      - "--api"
+      # - "--metrics.prometheus"
+      # - "--metrics.prometheus.addrouterslabels=true"
+      # - "--entryPoints.metrics.address=:8082"
+      # - "--entryPoints.metrics.forwardedHeaders.trustedIPs=10.0.0.0/24"
+      - "--entrypoints.web.address=:80"
+      - "--entryPoints.web.forwardedHeaders.trustedIPs=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entryPoints.websecure.forwardedHeaders.trustedIPs=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.network={{ traefik_network_name }}"
+      - "--providers.file.filename=/data/config.yml"
+      - "--serversTransport.insecureSkipVerify=true"
+    networks:
+      - {{ traefik_network_name }}
+    ports:
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - logs:/logs
+    configs:
+      - source: traefik-config
+        target: /data/config.yml
+    secrets:
+      - source:  traefik-default-certfile
+        target: /run/secrets/traefik-default-certfile
+      - source: traefik-default-keyfile
+        target: /run/secrets/traefik-default-keyfile
+    environment:
+      TZ: 'Europe/Riga'
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: '{{ traefik.limits.cpus }}'
+          memory: {{ traefik.limits.memory }}
+        reservations:
+          cpus: '{{ traefik.reservations.cpus }}'
+          memory: {{ traefik.reservations.memory }}
+      restart_policy:
+        condition: any
+        delay: 1s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.frontend.passHostHeader=true"
+        - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+        - "traefik.http.routers.traefik.tls=true"
+        - "traefik.http.routers.traefik.entrypoints=websecure"
+        - "traefik.http.routers.traefik.rule=Host(`{{ mgmt_hostname }}`) && (PathPrefix(`/{{ traefik_url_path }}/`) || Headers(`Referer`, `https://{{ mgmt_hostname }}/{{ traefik_url_path_headers }}/`))"
+        - "traefik.http.routers.traefik.middlewares=traefik"
+        {% if traeik_htpasswd is defined %}
+        - "traefik.http.middlewares.traefik.chain.middlewares=traefik-auth,traefik-strip-prefix"
+        - "traefik.http.middlewares.traefik-auth.basicauth.users={{ traefik_htpasswd.stdout }}"
+        {% else %}
+        - "traefik.http.middlewares.traefik.chain.middlewares=traefik-strip-prefix"
+        {% endif %}
+        - "traefik.http.middlewares.traefik-strip-prefix.stripprefix.prefixes=/{{ traefik_url_path }}"
+        - "traefik.http.routers.traefik.service=api@internal"
+        - "traefik.http.services.traefik.loadbalancer.server.port=8080"

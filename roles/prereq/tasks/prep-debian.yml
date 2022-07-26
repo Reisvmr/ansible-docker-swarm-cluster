@@ -29,6 +29,7 @@
     - python3-pip
     - python3-docker
     - apache2-utils
+    - jq
     state: present
     update_cache: true
   environment: {}

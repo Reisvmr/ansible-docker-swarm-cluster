@@ -5,13 +5,13 @@
 <hr>
 
 - [1. On VMs](#1-on-vms)
-  - [1.1 Firewall](#11-firewall)
-  - [1.2 OS user](#12-os-user)
-  - [1.3 Sudoers file](#13-sudoers-file)
+  - [1.1 Firewall](#1-1-firewall)
+  - [1.2 OS user](#1-2-os-user)
+  - [1.3 Sudoers file](#1-3-sudoers-file)
 - [2. On ansible workstation (admin node)](#2-on-ansible-workstation-admin-node)
-  - [2.1 Generate SSH keys](#21-generate-ssh-keys)
-  - [2.2 SSH folder and file permissions](#22-ssh-folder-and-file-permissions)
-  - [2.3 Setup passwordless SSH](#23-setup-passwordless-ssh)
+  - [2.1 Generate SSH keys](#2-1-generate-ssh-keys)
+  - [2.2 SSH folder and file permissions](#2-2-ssh-folder-and-file-permissions)
+  - [2.3 Setup passwordless SSH](#2-3-setup-passwordless-ssh)
 
 <br>
 
@@ -124,5 +124,5 @@ ssh-copy-id hladmin@127.0.0.11
 SSH without password
 
 ```shell
-ssh viadmin@127.0.0.11
+ssh hladmin@127.0.0.11
 ```

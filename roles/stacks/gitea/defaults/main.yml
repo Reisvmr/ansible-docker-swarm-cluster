@@ -21,7 +21,7 @@ gitea:
 # NODE: If you want to use authentication, then you need to provide user and password
 # or leave them empty
   mailer:
-    enable: true
+    enable: false
     type: smtp
     host: 'mail.example.com'
     port: 25
@@ -41,8 +41,8 @@ gitea:
     skip_tls_verify: true
 # Proxy configuration
   proxy:
-    enable: true
-    url: "{{ http_proxy }}"
+    enable: false
+    url: "{{ http_proxy|default(omit) }}"
     hosts: '*.office.com'
 
 # Stack default resource configuration

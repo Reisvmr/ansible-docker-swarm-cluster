@@ -18,7 +18,7 @@ gitea:
     ssh_domain: "{{ base_hostname }}"
     root_url: "https://{{ base_hostname }}/"
 # Mailer configuration
-# NODE: If you want to use authentification, then you need to provide user and password
+# NODE: If you want to use authentication, then you need to provide user and password
 # or leave them empty
   mailer:
     enable: true

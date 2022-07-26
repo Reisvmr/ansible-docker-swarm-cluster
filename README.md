@@ -187,6 +187,8 @@ Playbook to setup Gitea deployment.
 
 ### 7.1 Installation
 
+Change values in [roles/stacks/gitea/defaults/main.yml](roles/stacks/gitea/defaults/main.yml) file.
+
 After successful "New Portainer installation" run Gitea deployment setup playbook.
 
 You have to pass `--extra-vars=` key with `"key1=value1 key2=value2"` variables to the playbook:

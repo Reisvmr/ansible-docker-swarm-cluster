@@ -16,4 +16,4 @@ traefik_network_name: proxy
 traefik_network_subnet: 10.250.2.0/24
 
 # Gitea deployment version
-gitea_version: "1.18.8"
+gitea_version: "1.16.9"

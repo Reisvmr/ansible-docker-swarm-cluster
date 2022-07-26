@@ -82,14 +82,14 @@ services:
         - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
         - "traefik.http.routers.traefik.tls=true"
         - "traefik.http.routers.traefik.entrypoints=websecure"
-        - "traefik.http.routers.traefik.rule=Host(`{{ mgmt_hostname }}`) && (PathPrefix(`/{{ traefik_url_path }}/`) || Headers(`Referer`, `https://{{ mgmt_hostname }}/{{ traefik_url_path_headers }}/`))"
+        - "traefik.http.routers.traefik.rule=Host(`{{ base_hostname }}`) && (PathPrefix(`/{{ traefik_url_path }}/`) || Headers(`Referer`, `https://{{ base_hostname }}/{{ traefik_url_path_headers }}/`))"
         - "traefik.http.routers.traefik.middlewares=traefik"
-        {% if traeik_htpasswd is defined %}
+{% if traeik_htpasswd is defined %}
         - "traefik.http.middlewares.traefik.chain.middlewares=traefik-auth,traefik-strip-prefix"
         - "traefik.http.middlewares.traefik-auth.basicauth.users={{ traefik_htpasswd.stdout }}"
-        {% else %}
+{% else %}
         - "traefik.http.middlewares.traefik.chain.middlewares=traefik-strip-prefix"
-        {% endif %}
+{% endif %}
         - "traefik.http.middlewares.traefik-strip-prefix.stripprefix.prefixes=/{{ traefik_url_path }}"
         - "traefik.http.routers.traefik.service=api@internal"
         - "traefik.http.services.traefik.loadbalancer.server.port=8080"

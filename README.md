@@ -14,7 +14,11 @@ Repository contains everything to provision a Docker Swarm cluster.
 - [6. Post installation configuration](#6-post-installation-configuration)
   - [6.1 Portainer](#61-portainer)
   - [6.2 Traefik](#62-traefik)
-- [7. Uninstall](#7-uninstall)
+- [7. Gitea](#7-gitea)
+  - [7.1 Installation](#71-installation)
+  - [7.2 Post installation configuration](#72-post-installation-configuration)
+  - [7.3 Notification via MS Teams](#73-notification-via-ms-teams)
+- [8. Uninstall](#8-uninstall)
 
 <br>
 
@@ -75,11 +79,9 @@ ansible_become_method=sudo
 ; https_proxy=
 ; no_proxy=10.0.0.0/8,127.16.0.0/12,192.168.0.0/16
 
-# Base URL for management deployments
-mgmt_hostname=mgmt.example.com
-
-# Gitea deployment hostname
-gitea_hostname=gitea.example.com
+# Base URL for all kind of deployments, example: gitea.example.com
+# NOTE: URL will be used for management deployments and for Gitea
+base_hostname=gitea.example.com
 
 [manager]
 ds-manager-01
@@ -105,7 +107,7 @@ worker
 # Valid passwords can be created using the following command:
 #   tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1
 #
-# Files can be encoded in base64 format ussing the following command:
+# Files can be encoded in base64 format using the following command:
 #   base64 -w 0 <file>
 #############################################################################################
 
@@ -129,7 +131,7 @@ Playbook to install and configure Docker Swarm cluster.
 ansible-playbook -i inventory/<environment>/inventory.ini --ask-vault-pass setup.yml
 ```
 
-Will confiugre the cluster based on provided configuration in inventory files.
+Will configure the cluster based on provided configuration in inventory files.
 
 <br>
 
@@ -158,7 +160,7 @@ In following sections replace `{{ variable }}` with the configured value of `var
 
 ### 6.1 Portainer
 
-1. In browser navigate to `{{ mgmt_hostname }}/portainer/`
+1. In browser navigate to `https://{{ base_hostname }}/portainer/`
 2. Go through: "New Portainer installation"
    - Please create the initial administrator user
       - Provide your password (`The password must be at least 12 characters long`)
@@ -168,7 +170,7 @@ In following sections replace `{{ variable }}` with the configured value of `var
 
 ### 6.2 Traefik
 
-1. In browser navigate to `{{ mgmt_hostname }}/traefik/dashboard/`.
+1. In browser navigate to `https://{{ base_hostname }}/traefik/dashboard/`.
 2. Login with credentials provided in `all-vault.yml` file:
     ```
     vault_traefik_user:
@@ -179,7 +181,63 @@ In following sections replace `{{ variable }}` with the configured value of `var
 
 <br>
 
-## 7. Uninstall
+## 7. Gitea
+
+Playbook to setup Gitea deployment.
+
+### 7.1 Installation
+
+After successful "New Portainer installation" run Gitea deployment setup playbook.
+
+You have to pass `--extra-vars=` key with `"key1=value1 key2=value2"` variables to the playbook:
+- `portainer_user=` - Portainer admin username.
+- `portainer_password=` - Portainer admin user password.
+- `db_type=` - Gitea database type, example: `postgres`, `mysql`, `mssql` or `sqlite3`. If you set type to `sqlite3`, then rest database configuration can be ignored.
+- `db_host` - Gitea database host.
+- `db_port=` - Gitea database port.
+- `db_name=` - Gitea database name.
+- `db_user=` - Gitea database username.
+- `db_password=` - Gitea database password.
+
+Run playbook:
+
+```shell
+ansible-playbook -i inventory/<environment>/inventory.ini gitea.yml --extra-vars "portainer_user='admin' portainer_password='password' db_type='mysql' db_host='localhost' db_port='3306' db_name='gitea' db_user='gitea' db_password='password'"
+```
+
+If you set `db_type` to `sqlite3`:
+
+```shell
+ansible-playbook -i inventory/<environment>/inventory.ini gitea.yml --extra-vars "portainer_user='admin' portainer_password='password' db_type='sqlite3'"
+```
+
+### 7.2 Post installation configuration
+
+In following sections replace `{{ variable }}` with the configured value of `variable`.
+
+1. In browser navigate to `https://{{ base_hostname }}/`
+2. In "Initial Configuration" section:
+   - check that all fields are filled with correct values.
+3. In "Optional Settings" section:
+   - expand "Email Settings":
+     - check that all fields are filled with correct values.
+     - check "Enable Email Notifications" checkbox if needed.
+    - expand "Server and Third-Party Service Settings":
+      - check "Disable gravatar" checkbox.
+    - expand "Administrator Account Settings":
+      - fill out all fields required for administrator account.
+4. Click "Install Gitea" button.
+5. Wait for 10 seconds and refresh the page.
+
+### 7.3 Notification via MS Teams
+
+This is optional step.
+
+Follow the guide written in [docs/notifications.md](docs/notifications.md) file to setup notification via MS Teams.
+
+<br>
+
+## 8. Uninstall
 
 Playbook to uninstall Docker Swarm cluster.
 

@@ -61,7 +61,7 @@ services:
       - "traefik.docker.network={{ traefik_network_name }}"
       - "traefik.http.routers.portainer.tls=true"
       - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.rule=Host(`{{ mgmt_hostname }}`) && PathPrefix(`/{{ portainer_url_path }}/`)"
+      - "traefik.http.routers.portainer.rule=Host(`{{ base_hostname }}`) && PathPrefix(`/{{ portainer_url_path }}/`)"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer.middlewares=portainer-stripprefix"
       - "traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/{{ portainer_url_path }}"

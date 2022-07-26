@@ -104,8 +104,10 @@ services:
         - "traefik.http.routers.gitea.rule=Host(`{{ gitea.server.domain }}`)"
         - "traefik.http.services.gitea.loadbalancer.server.port=3000"
         - "traefik.frontend.passHostHeader=true"
+{% if gitea.server.disable_ssh %}
         # TCP route for SSH connection
         - "traefik.tcp.routers.gitea-ssh.entrypoints=gitea-ssh"
         - "traefik.tcp.services.gitea-ssh.loadBalancer.server.port=22"
         - "traefik.tcp.routers.gitea-ssh.service=gitea-ssh"
         - "traefik.tcp.routers.gitea-ssh.rule=HostSNI(`*`)"
+{% endif %}

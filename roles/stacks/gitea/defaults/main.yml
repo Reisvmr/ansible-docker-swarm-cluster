@@ -23,11 +23,11 @@ gitea:
   mailer:
     enable: true
     type: smtp
-    host: 'mail.vid.gov.lv'
+    host: 'mail.example.com'
     port: 25
     is_tls_enabled: false
     skip_tls_verify: true
-    from: "Gitea <gitea@vid.gov.lv>"
+    from: "Gitea <gitea@example.com>"
     user: ""
     password: ""
 # Webhook configuration

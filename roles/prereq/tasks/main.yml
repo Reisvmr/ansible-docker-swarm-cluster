@@ -1,5 +1,5 @@
 ---
-# Bootsrap the VM
+# Bootstrap the VM
 # Path: roles/prereq/tasks/main.yml
 
 - include_tasks: prep-rhel.yml

@@ -8,7 +8,7 @@
     exclude: ["docker-ce", "docker-ce-cli", "containerd.io"]
     gpgcheck: yes
 
-- name: Install pacakges
+- name: Install packages
   yum:
     name:
     - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"

@@ -6,7 +6,7 @@
     enabled: no
   ignore_errors: true
 
-- name: Unhold packages (Debian)
+- name: Un-hold packages (Debian)
   dpkg_selections:
     name: "{{ item }}"
     selection: purge

@@ -7,7 +7,7 @@
 # Valid passwords can be created using the following command:
 #   tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1
 #
-# Files can be encoded in base64 format ussing the following command:
+# Files can be encoded in base64 format using the following command:
 #   base64 -w 0 <file>
 #############################################################################################
 

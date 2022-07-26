@@ -1,0 +1,54 @@
+---
+# Gitea stack configuration
+# Configuration Cheat Sheet: https://docs.gitea.io/en-us/config-cheat-sheet/
+gitea:
+  run_mode: prod
+# Type of database used for gitea, example: postgres, mysql, mssql or sqlite3
+# NOTE: If you set type to 'sqlite3', then rest database configuration can be ignored
+  database:
+    type: "{{ db_type }}"
+    host: "{{ db_host|default(omit) }}"
+    port: "{{ db_port|default(omit) }}"
+    name: "{{ db_name|default(omit) }}"
+    user: "{{ db_user|default(omit) }}"
+    password: "{{ db_password|default(omit) }}"
+  server:
+    disable_ssh: false
+    domain: "{{ base_hostname }}"
+    ssh_domain: "{{ base_hostname }}"
+    root_url: "https://{{ base_hostname }}/"
+# Mailer configuration
+# NODE: If you want to use authentification, then you need to provide user and password
+# or leave them empty
+  mailer:
+    enable: true
+    type: smtp
+    host: 'mail.vid.gov.lv'
+    port: 25
+    is_tls_enabled: false
+    skip_tls_verify: true
+    from: "Gitea <gitea@vid.gov.lv>"
+    user: ""
+    password: ""
+# Webhook configuration
+  webhook:
+    enable: true
+    allowed_hosts_list: '*.office.com'
+# Migration configuration
+  migration:
+    enable: true
+    allowed_domains: '*.example.com'
+    skip_tls_verify: true
+# Proxy configuration
+  proxy:
+    enable: true
+    url: "{{ http_proxy }}"
+    hosts: '*.office.com'
+
+# Stack default resource configuration
+  reservations:
+    cpus: "0.5"
+    memory: 256M
+  limits:
+    cpus: "1"
+    memory: 1G

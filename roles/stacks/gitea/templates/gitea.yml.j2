@@ -1,0 +1,111 @@
+version: "3.8"
+
+networks:
+  # internal:
+    # driver: overlay
+    # attachable: true
+  {{ traefik_network_name }}:
+    external: true
+
+volumes:
+  data:
+    # driver_opts:
+    #   type: "nfs"
+    #   o: "addr=127.0.0.1,nolock,soft,rw"
+    #   device: ":/docker_gitea/data"
+
+services:
+  gitea:
+    image: gitea/gitea:{{ gitea_version }}
+    networks:
+      # - internal
+      - {{ traefik_network_name }}
+    volumes:
+      - data:/data
+    environment:
+      # https://docs.gitea.io/en-us/config-cheat-sheet
+      # Global
+      USER_UID: 1000
+      USER_GID: 1000
+      RUN_MODE: {{ gitea.run_mode }}
+      # Server
+      GITEA__server__DISABLE_SSH: '{{ gitea.server.disable_ssh }}'
+      GITEA__server__DOMAIN: '{{ gitea.server.domain }}'
+      GITEA__server__SSH_DOMAIN: '{{ gitea.server.ssh_domain }}'
+      GITEA__server__ROOT_URL: '{{ gitea.server.root_url }}'
+      # Database
+      GITEA__database__DB_TYPE: {{ gitea.database.type }}
+{% if gitea.database.type != "sqlite3" %}
+      GITEA__database__HOST: {{ gitea.database.host }}:{{ gitea.database.port }}
+      GITEA__database__NAME: {{ gitea.database.name }}
+      GITEA__database__USER: {{ gitea.database.user }}
+      GITEA__database__PASSWD: '{{ gitea.database.password }}'
+{% endif %}
+      # Service
+      GITEA__service__DISABLE_REGISTRATION: 'true'
+      GITEA__service__REQUIRE_SIGNIN_VIEW: 'true'
+      # OpenID
+      GITEA__openid__ENABLE_OPENID_SIGNIN: 'false'
+      GITEA__openid__ENABLE_OPENID_SIGNUP: 'false'
+      # Mailer
+      GITEA__mailer__ENABLED: '{{ gitea.mailer.enable }}'
+{% if gitea.mailer.enable %}
+      GITEA__mailer__HOST: '{{ gitea.mailer.host }}:{{ gitea.mailer.port }}'
+      GITEA__mailer__MAILER_TYPE: {{ gitea.mailer.type }}
+      GITEA__mailer__IS_TLS_ENABLED: '{{ gitea.mailer.is_tls_enabled }}'
+      GITEA__mailer__SKIP_VERIFY: '{{ gitea.mailer.skip_tls_verify }}'
+      GITEA__mailer__FROM: '{{ gitea.mailer.from }}'
+{% if gitea.mailer.user is defined and gitea.mailer.user|length > 0  and gitea.mailer.password is defined and gitea.mailer.password|length > 0 %}
+      GITEA__mailer__USER: '{{ gitea.mailer.user }}'
+      GITEA__mailer__PASSWD: '{{ gitea.mailer.password }}'
+{% endif %}
+{% endif %}
+      # UI
+      GITEA__ui__DEFAULT_THEME: arc-green
+      GITEA__ui__EXPLORE_PAGING_NUM: '30'
+      GITEA__ui__MEMBERS_PAGING_NUM: '30'
+
+{% if gitea.webhook.enable %}
+      # Webhook
+      GITEA__webhook__ALLOWED_HOST_LIST: '{{ gitea.webhook.allowed_hosts_list }}'
+{% endif %}
+
+{% if gitea.migration.enable %}
+      # Migrations
+      GITEA__migrations__ALLOWED_DOMAINS: "{{ gitea.migration.allowed_domains }}"
+      GITEA__migrations__SKIP_TLS_VERIFY: "{{ gitea.migration.skip_tls_verify }}"
+{% endif %}
+
+{% if gitea.proxy.enable %}
+      # Proxy
+      GITEA__proxy__PROXY_ENABLED: '{{ gitea.proxy.enable }}'
+      GITEA__proxy__PROXY_URL: '{{ gitea.proxy.url }}'
+      GITEA__proxy__PROXY_HOSTS: '{{ gitea.proxy.hosts }}'
+{% endif %}
+    deploy:
+      # placement:
+      #   constraints: [node.labels.gitea_web == true]
+      resources:
+        limits:
+          cpus: '{{ gitea.limits.cpus }}'
+          memory: '{{ gitea.limits.memory }}'
+        reservations:
+          cpus: '{{ gitea.reservations.cpus }}'
+          memory: '{{ gitea.reservations.memory }}'
+      restart_policy:
+        condition: any
+        delay: 5s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network={{ traefik_network_name }}"
+        # HTTP route for WEB connection
+        - "traefik.http.routers.gitea.tls=true"
+        - "traefik.http.routers.gitea.entrypoints=websecure"
+        - "traefik.http.routers.gitea.rule=Host(`{{ gitea.server.domain }}`)"
+        - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+        - "traefik.frontend.passHostHeader=true"
+        # TCP route for SSH connection
+        - "traefik.tcp.routers.gitea-ssh.entrypoints=gitea-ssh"
+        - "traefik.tcp.services.gitea-ssh.loadBalancer.server.port=22"
+        - "traefik.tcp.routers.gitea-ssh.service=gitea-ssh"
+        - "traefik.tcp.routers.gitea-ssh.rule=HostSNI(`*`)"

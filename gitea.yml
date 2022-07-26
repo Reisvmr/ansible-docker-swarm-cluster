@@ -1,0 +1,7 @@
+---
+- name: Gitea deployment
+  hosts: localhost
+  vars_files:
+    - roles/stacks/mgmt/defaults/main.yml
+  roles:
+    - role: stacks/gitea

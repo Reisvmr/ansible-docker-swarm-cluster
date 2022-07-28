@@ -18,3 +18,28 @@
   become: true
   roles:
     - role: stacks/mgmt
+
+- name: Log rotate
+  hosts: manager
+  become: true
+  vars_files:
+  - roles/docker/defaults/main.yml
+  tasks:
+    - name: Traefik log rotate
+      copy:
+        dest: "/etc/logrotate.d/traefik"
+        state: file
+        content: |
+          {{ docker_local_storage }}/volumes/traefik_logs/_data/*.log {
+              daily
+              rotate 90
+              compress
+              missingok
+              notifempty
+              dateext
+              dateformat .%Y%m%d
+              create 0644 root root
+              postrotate
+                  docker kill --signal="USR1" $(docker ps | grep traefik | awk '{print $1}')
+              endscript
+          }

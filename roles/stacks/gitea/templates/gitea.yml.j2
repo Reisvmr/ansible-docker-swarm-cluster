@@ -1,24 +1,22 @@
 version: "3.8"
 
 networks:
-  # internal:
-    # driver: overlay
-    # attachable: true
   {{ traefik_network_name }}:
     external: true
 
 volumes:
   data:
-    # driver_opts:
-    #   type: "nfs"
-    #   o: "addr=127.0.0.1,nolock,soft,rw"
-    #   device: ":/docker_gitea/data"
+{% if share_enable %}
+    driver_opts:
+      type: "{{ share_type }}"
+      o: "addr={{ share_server }},nolock,soft,rw"
+      device: ":{{ share_server_path }}/gitea"
+{% endif %}
 
 services:
   gitea:
     image: gitea/gitea:{{ gitea_version }}
     networks:
-      # - internal
       - {{ traefik_network_name }}
     volumes:
       - data:/data
@@ -64,18 +62,15 @@ services:
       GITEA__ui__DEFAULT_THEME: arc-green
       GITEA__ui__EXPLORE_PAGING_NUM: '30'
       GITEA__ui__MEMBERS_PAGING_NUM: '30'
-
 {% if gitea.webhook.enable %}
       # Webhook
       GITEA__webhook__ALLOWED_HOST_LIST: '{{ gitea.webhook.allowed_hosts_list }}'
 {% endif %}
-
 {% if gitea.migration.enable %}
       # Migrations
       GITEA__migrations__ALLOWED_DOMAINS: "{{ gitea.migration.allowed_domains }}"
       GITEA__migrations__SKIP_TLS_VERIFY: "{{ gitea.migration.skip_tls_verify }}"
 {% endif %}
-
 {% if gitea.proxy.enable %}
       # Proxy
       GITEA__proxy__PROXY_ENABLED: '{{ gitea.proxy.enable }}'
@@ -83,8 +78,6 @@ services:
       GITEA__proxy__PROXY_HOSTS: '{{ gitea.proxy.hosts }}'
 {% endif %}
     deploy:
-      # placement:
-      #   constraints: [node.labels.gitea_web == true]
       resources:
         limits:
           cpus: '{{ gitea.limits.cpus }}'

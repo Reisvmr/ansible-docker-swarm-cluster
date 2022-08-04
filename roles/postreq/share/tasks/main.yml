@@ -1,0 +1,25 @@
+---
+- name: Verify connection to nfs is open
+  wait_for:
+    host: "{{ share_server }}"
+    port: 2049
+    delay: 5
+    state: started
+
+- name: Create a mountable directory
+  file:
+    state: directory
+    path: "{{ share_server_path }}"
+
+- name: Mount a share
+  mount:
+    src: "{{ share_server }}:{{ share_server_path }}"
+    path: '{{ share_server_path }}'
+    opts: rw,sync,hard,intr
+    state: mounted
+    fstype: "{{ share_type }}"
+
+- name: Create directory for deployments
+  file:
+    state: directory
+    path: "{{ share_server_path }}/gitea"

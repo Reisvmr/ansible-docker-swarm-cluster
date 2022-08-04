@@ -10,7 +10,7 @@
     src: gitea.yml.j2
     dest: /tmp/gitea/gitea.yml
     mode: 0644
-  register: gitea_stack
+  # register: gitea_stack
 
 - name: Setup deploy script
   copy:
@@ -20,7 +20,14 @@
 
 - name: Deploy Gitea stack
   shell: "/tmp/gitea/deploy.sh primary gitea /tmp/gitea/gitea.yml {{ portainer_user }} {{ portainer_password }} https://{{ base_hostname }}/{{ portainer_url_path }}"
-  when: gitea_stack.changed
+  # when: gitea_stack.changed
+  when: portainer_hostname is not defined
+  register: gitea_deploy
+
+- name: Deploy Gitea stack
+  shell: "/tmp/gitea/deploy.sh primary gitea /tmp/gitea/gitea.yml {{ portainer_user }} {{ portainer_password }} https://{{ portainer_hostname }}/{{ portainer_url_path }}"
+  # when: gitea_stack.changed
+  when: portainer_hostname is defined
   register: gitea_deploy
 
 - name: Debug

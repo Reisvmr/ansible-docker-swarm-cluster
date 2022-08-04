@@ -70,4 +70,5 @@
     - python3-setuptools
     - httpd-tools
     - jq
+    - nfs-utils
     state: present

@@ -30,6 +30,7 @@
     - python3-docker
     - apache2-utils
     - jq
+    - nfs-common
     state: present
     update_cache: true
   environment: {}

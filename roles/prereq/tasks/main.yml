@@ -37,7 +37,7 @@
 - name: Install required python3 dependencies
   pip:
     name:
-      - pyyaml>=6.0
+      # - pyyaml>=6.0
       - jsondiff>=2.0.0
       - docker>=5.0.1
     state: present

@@ -33,6 +33,7 @@ Repository contains everything to provision a Docker Swarm cluster.
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
 **Additional requirements**:
+- NFS share for shared docker volumes on all hosts
 - [VMs OS and Workstation requirements](docs/requirements.md)
 - multi manager cluster requires additional load balancer in front of the cluster (HaProxy, NetScaler, etc)
 
@@ -84,6 +85,12 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 # Base URL for all kind of deployments, example: gitea.example.com
 # NOTE: URL will be used for management deployments and for Gitea
 base_hostname=gitea.example.com
+
+# Shared volume settings for gitea deployment
+share_enable=true
+share_type=nfs
+share_server=127.0.0.10
+share_server_path=/docker_volume
 
 [manager]
 ds-manager-01
@@ -197,7 +204,7 @@ You have to pass `--extra-vars=` key with `"key1=value1 key2=value2"` variables 
 - `portainer_user=` - Portainer admin username.
 - `portainer_password=` - Portainer admin user password.
 - `db_type=` - Gitea database type, example: `postgres`, `mysql`, `mssql` or `sqlite3`. If you set type to `sqlite3`, then rest database configuration can be ignored.
-- `db_host` - Gitea database host.
+- `db_host=` - Gitea database host.
 - `db_port=` - Gitea database port.
 - `db_name=` - Gitea database name.
 - `db_user=` - Gitea database username.

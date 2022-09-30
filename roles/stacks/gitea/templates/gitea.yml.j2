@@ -78,6 +78,13 @@ services:
       GITEA__proxy__PROXY_HOSTS: '{{ gitea.proxy.hosts }}'
 {% endif %}
     deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        delay: 10s
+        failure_action: rollback
       resources:
         limits:
           cpus: '{{ gitea.limits.cpus }}'

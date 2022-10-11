@@ -18,7 +18,8 @@ Repository contains everything to provision a Docker Swarm cluster.
   - [7.1 Installation](#71-installation)
   - [7.2 Post installation configuration](#72-post-installation-configuration)
   - [7.3 Notification via MS Teams](#73-notification-via-ms-teams)
-- [8. Uninstall](#8-uninstall)
+- [8. Deployments update](#8-deployments-update)
+- [9. Uninstall](#9-uninstall)
 
 <br>
 
@@ -51,7 +52,7 @@ Access to following external resources are required:
 
 ## 3. Configuration
 
-- Create copy of `inventory/default` directory and name it after your environment, example: `inventory/<environment>/cluster.yml`
+- Create copy of `inventory/default` directory and name it after your environment, example: `inventory/<environment>`
 - Edit your environment `inventory.ini` file by filling out environment specific configuration values.
 - Edit your environment `all-vault.yml` file by filling out environment specific secrets.
 
@@ -248,7 +249,29 @@ Follow the guide written in [docs/notifications.md](docs/notifications.md) file 
 
 <br>
 
-## 8. Uninstall
+## 8. Deployments update
+
+To update cluster management and gitea deployments you have to re-run setup playbooks.
+
+Provide new deployment versions in file `inventory/<environment>/group_vars/all/all.yml` for variables:
+
+```yml
+portainer_version:
+traefik_version:
+gitea_version:
+```
+
+For management deployments update, simply re-run setup playbook with providing role tag:
+
+```shell
+ansible-playbook -i inventory/<environment>/inventory.ini --ask-vault-pass setup.yml --tags "mgmt"
+```
+
+For gitea deployment update, simply re-run gitea playbook as its described in [7.1 Installation](#71-installation)
+
+<br>
+
+## 9. Uninstall
 
 Playbook to uninstall Docker Swarm cluster.
 

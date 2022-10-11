@@ -1,0 +1,5 @@
+{
+    "markdown.extension.toc.levels": "2..6",
+    "markdown.extension.toc.slugifyMode": "github",
+    "markdown.extension.tableFormatter.normalizeIndentation": true,
+}

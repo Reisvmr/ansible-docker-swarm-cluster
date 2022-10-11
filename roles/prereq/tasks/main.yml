@@ -42,6 +42,7 @@
       - docker>=5.0.1
     state: present
   environment: "{{ proxy_env }}"
+  ignore_errors: true
 
 - name: Assign inventory name to unconfigured hostnames
   hostname:

@@ -4,7 +4,11 @@
     "log-opts": {
         "max-size": "{{ docker_log_max_size }}"
     },
+{% if docker_version is version('23.0.0', '>=', version_type='semver') %}
+    "data-root": "{{ docker_local_storage }}",
+{% else %}
     "graph": "{{ docker_local_storage }}",
+{% endif %}
     "storage-driver": "overlay2",
     "icc": false,
     "no-new-privileges": true,

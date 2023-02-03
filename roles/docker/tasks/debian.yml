@@ -15,9 +15,17 @@
     id: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_id }}"
     url: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_url }}"
     state: present
+  when: http_proxy is not defined and https_proxy is not defined
+
+- name: Add repository public key via proxy
+  apt_key:
+    id: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_id }}"
+    url: "{{ docker_repository[ansible_distribution][ansible_distribution_major_version].key_url }}"
+    state: present
   environment:
-    http_proxy: "{{ http_proxy }}"
-    https_proxy: "{{ https_proxy }}"
+    http_proxy: "{{ http_proxy|default(omit) }}"
+    https_proxy: "{{ https_proxy|default(omit) }}"
+  when: http_proxy is defined and https_proxy is defined
 
 - name: Add repository
   apt_repository:

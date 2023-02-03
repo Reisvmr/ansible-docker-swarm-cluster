@@ -36,8 +36,8 @@ docker_packages:
     'docker-ce-cli': 'docker-ce-cli-{{ docker_version }}'
     'containerd.io': 'containerd.io'
   Ubuntu:
-    'docker-ce': 'docker-ce'
-    'docker-ce-cli': 'docker-ce-cli'
+    'docker-ce': 'docker-ce=5:{{ docker_version }}*'
+    'docker-ce-cli': 'docker-ce-cli=5:{{ docker_version }}*'
     'containerd.io': 'containerd.io'
 
 # Storage under which docker will create its own datasets.

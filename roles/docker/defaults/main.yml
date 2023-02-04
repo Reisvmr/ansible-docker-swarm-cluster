@@ -37,10 +37,12 @@ docker_packages:
     'docker-ce': 'docker-ce-{{ docker_version }}'
     'docker-ce-cli': 'docker-ce-cli-{{ docker_version }}'
     'containerd.io': 'containerd.io'
+    'version_lock': 'yum-plugin-versionlock'
   Rocky:
     'docker-ce': 'docker-ce-{{ docker_version }}'
     'docker-ce-cli': 'docker-ce-cli-{{ docker_version }}'
     'containerd.io': 'containerd.io'
+    'version_lock': 'python3-dnf-plugin-versionlock'
   Ubuntu:
     'docker-ce': 'docker-ce=5:{{ docker_version }}*'
     'docker-ce-cli': 'docker-ce-cli=5:{{ docker_version }}*'

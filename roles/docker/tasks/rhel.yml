@@ -8,10 +8,40 @@
     exclude: ["docker-ce", "docker-ce-cli", "containerd.io"]
     gpgcheck: yes
 
-- name: Install packages
+- name: Install packages with YUM
   yum:
     name:
     - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"
     - "{{ docker_packages[ansible_os_family]['docker-ce-cli'] }}"
     - "{{ docker_packages[ansible_os_family]['containerd.io'] }}"
+    - "{{ docker_packages[ansible_os_family]['version_lock'] }}"
     disable_excludes: "docker"
+  when: ansible_distribution_major_version == "7"
+
+- name: Install packages with DNF
+  dnf:
+    name:
+    - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"
+    - "{{ docker_packages[ansible_os_family]['docker-ce-cli'] }}"
+    - "{{ docker_packages[ansible_os_family]['containerd.io'] }}"
+    - "{{ docker_packages[ansible_os_family]['version_lock'] }}"
+    disable_excludes: "docker"
+  when: ansible_distribution_major_version >= "8"
+
+- name: Lock packages (RHEL 7)
+  community.general.yum_versionlock:
+    state: present
+    name:
+    - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"
+    - "{{ docker_packages[ansible_os_family]['docker-ce-cli'] }}"
+    - "{{ docker_packages[ansible_os_family]['containerd.io'] }}"
+  when: ansible_distribution_major_version == "7"
+
+- name: Lock packages (RHEL 8+)
+  community.general.dnf_versionlock:
+    state: present
+    name:
+    - "{{ docker_packages[ansible_os_family]['docker-ce'] }}"
+    - "{{ docker_packages[ansible_os_family]['docker-ce-cli'] }}"
+    - "{{ docker_packages[ansible_os_family]['containerd.io'] }}"
+  when: ansible_distribution_major_version >= "8"

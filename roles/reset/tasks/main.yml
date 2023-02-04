@@ -16,6 +16,24 @@
   - containerd.io
   when: ansible_os_family == 'Debian'
 
+- name: Un-hold packages (RedHat 7)
+  community.general.yum_versionlock:
+    state: absent
+    name:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: Un-hold packages (RedHat or Rocky 8+)
+  community.general.dnf_versionlock:
+    state: absent
+    name:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  when: ansible_os_family in ['RedHat', 'Rocky'] and ansible_distribution_major_version >= '8'
+
 - name: Remove docker related packages
   package:
     name:

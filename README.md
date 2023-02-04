@@ -81,7 +81,7 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 # Proxy configuration
 ; http_proxy=
 ; https_proxy=
-; no_proxy=10.0.0.0/8,127.16.0.0/12,192.168.0.0/16
+; no_proxy=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
 
 # Base URL for all kind of deployments, example: gitea.example.com
 # NOTE: URL will be used for management deployments and for Gitea

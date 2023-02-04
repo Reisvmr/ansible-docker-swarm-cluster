@@ -1,19 +1,19 @@
 ---
-docker_version: "20.10.17"
+docker_version: "20.10.23"
 
 # Portainer hostname path prefix
 portainer_url_path: portainer
 # Portainer deployment version
-portainer_version: "2.15.1"
+portainer_version: "2.16.2"
 
 # Traefik hostname path prefix
 traefik_url_path: traefik
 traefik_url_path_headers: "{{ traefik_url_path }}/dashboard"
 # Traefik deployment version
-traefik_version: "2.8.8"
+traefik_version: "2.9.6"
 # Traefik network for reverse proxy
 traefik_network_name: proxy
 traefik_network_subnet: 10.250.2.0/24
 
 # Gitea deployment version
-gitea_version: "1.17.2"
+gitea_version: "1.18.3"

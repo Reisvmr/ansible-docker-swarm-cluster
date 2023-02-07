@@ -15,6 +15,7 @@
   - docker-ce-cli
   - containerd.io
   when: ansible_os_family == 'Debian'
+  ignore_errors: True
 
 - name: Un-hold packages (RedHat 7)
   community.general.yum_versionlock:
@@ -24,6 +25,7 @@
     - docker-ce-cli
     - containerd.io
   when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'
+  ignore_errors: True
 
 - name: Un-hold packages (RedHat or Rocky 8+)
   community.general.dnf_versionlock:
@@ -33,6 +35,7 @@
     - docker-ce-cli
     - containerd.io
   when: ansible_os_family in ['RedHat', 'Rocky'] and ansible_distribution_major_version >= '8'
+  ignore_errors: True
 
 - name: Remove docker related packages
   package:
@@ -41,6 +44,7 @@
     - docker-ce-cli
     - containerd.io
     state: absent
+  register: remove_docker_packages
 
 - name: Remove repository public key (Debian)
   apt_key:
@@ -76,3 +80,4 @@
 - name: Reboot a machine
   reboot:
     reboot_timeout: 600
+  when: remove_docker_packages.changed

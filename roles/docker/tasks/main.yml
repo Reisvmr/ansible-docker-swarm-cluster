@@ -42,3 +42,19 @@
     name: "{{ ansible_user }}"
     groups: docker
     append: yes
+
+- name: Downloading docker-compose binary
+  shell: "curl -SL {{ docker_compose_binary_url }} -o {{ docker_binary_path }}/docker-compose"
+  when: http_proxy is not defined and https_proxy is not defined
+
+- name: Downloading docker-compose binary with proxy
+  shell: "curl -SL {{ docker_compose_binary_url }} -o {{ docker_binary_path }}/docker-compose"
+  environment:
+    http_proxy: "{{ http_proxy|default(omit) }}"
+    https_proxy: "{{ https_proxy|default(omit) }}"
+  when: http_proxy is defined and https_proxy is defined
+
+- name: Make docker-compose binary executable
+  file:
+    dest: "{{ docker_binary_path }}/docker-compose"
+    mode: +x

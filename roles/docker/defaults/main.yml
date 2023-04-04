@@ -56,3 +56,7 @@ docker_log_max_size: 100m
 
 # Network bridge IP.
 docker_network_bip: 10.250.1.1/24
+
+# Docker compose.
+docker_compose_binary_url: "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
+docker_binary_path: /usr/local/bin

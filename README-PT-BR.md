@@ -62,14 +62,14 @@ O acesso aos seguintes recursos externos é necessário:
 
 ```ini
 # Nomes de host do servidor <ambiente>-<função>-<índice>
-[todos]
+[all]
 ds-manager-01 ansible_host=127.0.0.11
 ds-manager-02 ansible_host=127.0.0.12
 ds-worker-01 ansible_host=127.0.0.13
 ds-worker-02 ansible_host=127.0.0.14
 
 # Variáveis comuns para todos os hosts
-[todos:vars]
+[all:vars]
 # Usuário para conexões ssh
 ansible_user=
 # Chave privada do usuário para conexão sem senha
